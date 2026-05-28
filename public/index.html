@@ -233,23 +233,30 @@
       const res = await fetch("/api/timings/today");
       const json = await res.json();
 
-      console.log("TODAY API >>>", json);
+      console.log("🔍 TODAY API RESPONSE:", json);
+      console.log("🔍 Hijri value:", json.hijri);
+      console.log("🔍 City value:", json.city);
     
-      // Update Hijri date in header
-      // API returns hijri at top level: json.hijri
+      // Update Hijri date - it should be at json.hijri
       if (json.hijri) {
+        console.log("✅ Setting Hijri date to:", json.hijri);
         document.getElementById("today-hijri").textContent = json.hijri;
+      } else {
+        console.warn("❌ No hijri found in response");
       }
       
-      // Update city name in subtitle
-      // API returns city at top level: json.city
+      // Update city name
       if (json.city) {
+        console.log("✅ Setting city to:", json.city);
         document.getElementById("city-name").textContent = json.city;
         document.getElementById("today-location").textContent = json.city;
+      } else {
+        console.warn("❌ No city found in response");
       }
 
-      // Extract prayers array - API returns prayers at top level
+      // Extract prayers - should be at json.prayers
       const prayers = json.prayers || [];
+      console.log("🔍 Prayers array:", prayers);
 
       timingList.innerHTML = "";
 
@@ -273,7 +280,7 @@
         timingList.appendChild(div);
       });
     } catch (err) {
-      console.error("TODAY ERROR", err);
+      console.error("❌ TODAY ERROR", err);
     }
   }
 
@@ -283,9 +290,9 @@
       const res = await fetch("/api/timings/week");
       const json = await res.json();
 
-      console.log("WEEK API >>>", json);
+      console.log("🔍 WEEK API RESPONSE:", json);
 
-      const week = Array.isArray(json) ? json : (json.weekTimetable || []);
+      const week = Array.isArray(json) ? json : [];
 
       weekBody.innerHTML = "";
 
@@ -312,7 +319,7 @@
         weekBody.appendChild(tr);
       });
     } catch (err) {
-      console.error("WEEK ERROR", err);
+      console.error("❌ WEEK ERROR", err);
     }
   }
 
@@ -339,7 +346,7 @@
         annContainer.appendChild(div);
       });
     } catch (err) {
-      console.error("ANN ERROR", err);
+      console.error("❌ ANN ERROR", err);
     }
   }
 
@@ -355,12 +362,13 @@
       document.getElementById("masjid-phone").textContent = "📞 " + info.phone;
       document.getElementById("masjid-email").textContent = "📧 " + info.email;
     } catch (err) {
-      console.error("MASJID INFO ERROR", err);
+      console.error("❌ MASJID INFO ERROR", err);
     }
   }
 
   /* ========= PAGE LOAD ========= */
   document.addEventListener("DOMContentLoaded", () => {
+    console.log("📄 Page loaded, fetching data...");
     loadToday();
     loadWeek();
     loadAnnouncements();
