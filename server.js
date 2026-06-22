@@ -94,6 +94,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Public APIs
 app.get("/api/timings/today", (req, res) => {
+  // Return the todayData object directly (not wrapped in another layer)
   res.json(todayData);
 });
 
@@ -126,6 +127,7 @@ app.post("/api/admin/masjid", basicAuth, (req, res) => {
 
 
 app.get("/api/timings/week", (req, res) => {
+  // Return the weekTimetable array directly
   res.json(weekTimetable);
 });
 

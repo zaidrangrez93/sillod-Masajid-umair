@@ -21,9 +21,9 @@
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at top,#ecfdf5 0,#f9fafb 45%,#f3f4f6 100%);color:var(--text-main);min-height:100vh}
     .page{max-width:1200px;margin:0 auto;padding:16px}
-    .header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px;margin-bottom:18px;background:rgba(255,255,255,0.9);border-radius:var(--radius-lg);border:1px solid rgba(209,213,219,0.6);backdrop-filter:blur(10px);box-shadow:0 10px 25px rgba(15,23,42,0.06)}
+    .header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px;margin-bottom:18px;background:rgba(255,255,255,0.9);border-radius:var(--radius-lg);border:1px solid var(--border-soft);box-shadow:var(--shadow-soft)}
     .brand{display:flex;align-items:center;gap:14px}
-    .brand-icon{width:40px;height:40px;border-radius:18px;background:radial-gradient(circle at 30% 20%,#bbf7d0,#22c55e);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 20px rgba(22,163,74,0.4);position:relative;overflow:hidden}
+    .brand-icon{width:40px;height:40px;border-radius:18px;background:radial-gradient(circle at 30% 20%,#bbf7d0,#22c55e);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 20px rgba(34,197,94,0.3);position:relative}
     .brand-icon::before{content:"";position:absolute;inset:12%;border-radius:40%;border:2px solid rgba(236,253,245,0.8);border-bottom:none;border-left:none;transform:rotate(-12deg)}
     .brand-icon span{font-size:18px;color:#ecfdf5;font-weight:700;letter-spacing:.04em}
     .brand-text{display:flex;flex-direction:column;gap:2px}
@@ -114,7 +114,7 @@
         <div class="card-header">
           <div>
             <div class="card-title">
-              Today’s Prayer Timings
+              Today's Prayer Timings
               <span class="card-badge">Daily Schedule</span>
             </div>
             <div class="card-subtitle">
@@ -198,7 +198,7 @@
           </div>
 
           <div class="map-container">
-            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3742.096402447155!2d75.6480004750106!3d20.29627648117599!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bdbcd8e87413445%3A0xb5a89ade3e6d6dea!2sAbdul%20Samad%20Masjid!5e0!3m2!1sen!2sin!4v1768467504925!5m2!1sen!2sin" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3742.096402447155!2d75.6480004750106!3d20.29627648117599!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bdbcd8e8741[...]
           </div>
 
           <div class="address" id="masjid-address">
@@ -233,14 +233,30 @@
       const res = await fetch("/api/timings/today");
       const json = await res.json();
 
-      console.log("TODAY API >>>", json);
+      console.log("🔍 TODAY API RESPONSE:", json);
+      console.log("🔍 Hijri value:", json.hijri);
+      console.log("🔍 City value:", json.city);
     
+      // Update Hijri date - it should be at json.hijri
+      if (json.hijri) {
+        console.log("✅ Setting Hijri date to:", json.hijri);
+        document.getElementById("today-hijri").textContent = json.hijri;
+      } else {
+        console.warn("❌ No hijri found in response");
+      }
+      
+      // Update city name
+      if (json.city) {
+        console.log("✅ Setting city to:", json.city);
+        document.getElementById("city-name").textContent = json.city;
+        document.getElementById("today-location").textContent = json.city;
+      } else {
+        console.warn("❌ No city found in response");
+      }
 
-      // EXACT JSON STRUCTURE FIX
-      const prayers =
-        json.todayData?.prayers ||
-        json.prayers ||
-        [];
+      // Extract prayers - should be at json.prayers
+      const prayers = json.prayers || [];
+      console.log("🔍 Prayers array:", prayers);
 
       todayData.innerHTML = "";
 
@@ -264,7 +280,7 @@
         timingList.appendChild(div);
       });
     } catch (err) {
-      console.error("TODAY ERROR", err);
+      console.error("❌ TODAY ERROR", err);
     }
   }
 
@@ -274,12 +290,9 @@
       const res = await fetch("/api/timings/week");
       const json = await res.json();
 
-      console.log("WEEK API >>>", json);
+      console.log("🔍 WEEK API RESPONSE:", json);
 
-      const week =
-        json.weekTimetable ||
-        json.week ||
-        [];
+      const week = Array.isArray(json) ? json : [];
 
       weekBody.innerHTML = "";
 
@@ -306,7 +319,7 @@
         weekBody.appendChild(tr);
       });
     } catch (err) {
-      console.error("WEEK ERROR", err);
+      console.error("❌ WEEK ERROR", err);
     }
   }
 
@@ -333,12 +346,12 @@
         annContainer.appendChild(div);
       });
     } catch (err) {
-      console.error("ANN ERROR", err);
+      console.error("❌ ANN ERROR", err);
     }
   }
 
-
   async function loadMasjidInfo() {
+    try {
       const res = await fetch("/api/masjid");
       const info = await res.json();
 
@@ -348,12 +361,18 @@
       `;
       document.getElementById("masjid-phone").textContent = "📞 " + info.phone;
       document.getElementById("masjid-email").textContent = "📧 " + info.email;
+    } catch (err) {
+      console.error("❌ MASJID INFO ERROR", err);
     }
-       /* ========= PAGE LOAD ========= */
+  }
+
+  /* ========= PAGE LOAD ========= */
   document.addEventListener("DOMContentLoaded", () => {
+    console.log("📄 Page loaded, fetching data...");
     loadToday();
     loadWeek();
     loadAnnouncements();
+    loadMasjidInfo();
   });
 
   
